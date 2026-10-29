@@ -1,0 +1,90 @@
+<%!
+    private static final java.time.ZoneId HOTEL_ZONE = java.time.ZoneId.of("America/Lima");
+    private static final java.util.regex.Pattern HOTEL_NAME_CONTROL = java.util.regex.Pattern.compile("\\p{Cntrl}");
+    private static final java.util.regex.Pattern HOTEL_NOTES_CONTROL = java.util.regex.Pattern.compile("[\\p{Cntrl}&&[^\\r\\n\\t]]");
+    private static final java.util.regex.Pattern HOTEL_EMAIL = java.util.regex.Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
+    private static final class HotelRoom {
+        private final String id;
+        private final String name;
+        private final String image;
+        private final String description;
+        private final int rate;
+        private final int capacity;
+        private final String[] features;
+
+        private HotelRoom(String id, String name, String image, String description, int rate, int capacity, String[] features) {
+            this.id = id;
+            this.name = name;
+            this.image = image;
+            this.description = description;
+            this.rate = rate;
+            this.capacity = capacity;
+            this.features = features;
+        }
+    }
+
+    private static java.util.Map<String, HotelRoom> hotelRooms() {
+        java.util.Map<String, HotelRoom> rooms = new java.util.LinkedHashMap<String, HotelRoom>();
+        rooms.put("deluxe", new HotelRoom("deluxe", "Deluxe Room", "assets/images/deluxe-room.png",
+            "Una pausa luminosa con vistas panorámicas y detalles pensados para descansar.", 280, 2,
+            new String[] {"Cama king", "Vista panorámica", "Wi-Fi"}));
+        rooms.put("premium-twin", new HotelRoom("premium-twin", "Premium Twin", "assets/images/premium-twin.png",
+            "Espacio contemporáneo con dos camas y la comodidad ideal para compartir.", 350, 2,
+            new String[] {"Dos camas", "Smart TV", "Wi-Fi"}));
+        rooms.put("junior-suite", new HotelRoom("junior-suite", "Junior Suite", "assets/images/junior-suite.png",
+            "Una estancia más amplia que combina una sala privada y una suite acogedora.", 480, 3,
+            new String[] {"Sala de estar", "Minibar", "Desayuno"}));
+        rooms.put("royal-suite", new HotelRoom("royal-suite", "Royal Suite", "assets/images/royal-suite.png",
+            "Una suite exclusiva con jacuzzi privado y vistas panorámicas para compartir.", 750, 4,
+            new String[] {"Jacuzzi privado", "Vista panorámica", "4 personas"}));
+        return rooms;
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    private static boolean hasHotelLength(String value, int min, int max) {
+        int length = value.codePointCount(0, value.length());
+        return length >= min && length <= max;
+    }
+
+    private static java.time.LocalDate parseHotelDate(String value) {
+        try {
+            return java.time.LocalDate.parse(value, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (java.time.format.DateTimeParseException exception) {
+            return null;
+        }
+    }
+
+    private static String createHotelToken() {
+        byte[] bytes = new byte[32];
+        new java.security.SecureRandom().nextBytes(bytes);
+        StringBuilder token = new StringBuilder(64);
+        for (byte value : bytes) {
+            token.append(String.format("%02x", value & 0xff));
+        }
+        return token.toString();
+    }
+
+    private static String hotelReference() {
+        byte[] bytes = new byte[4];
+        new java.security.SecureRandom().nextBytes(bytes);
+        StringBuilder reference = new StringBuilder("AUR-");
+        for (byte value : bytes) {
+            reference.append(String.format("%02X", value & 0xff));
+        }
+        return reference.toString();
+    }
+
+    private static String formatHotelPrice(int value) {
+        java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.forLanguageTag("es-PE"));
+        symbols.setGroupingSeparator('.');
+        symbols.setDecimalSeparator(',');
+        return new java.text.DecimalFormat("#,##0", symbols).format(value);
+    }
+%>
